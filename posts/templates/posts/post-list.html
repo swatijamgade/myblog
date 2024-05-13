@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Site</title>
+</head>
+<body>
+    <h1>Welcome to my Site!</h1>
+    <p>Check out my posts</p>
+
+    <a href="https://www.w3schools.com">Click me</a>
+
+    {% for p in all_posts %}
+        <h2><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h2>
+        <p>posted on {{ p.publish }}</p>
+        <p>by {{ p.author }}</p>
+        <p>{{ p.content }}</p>
+    {% endfor %}
+
+    <h1>{{ title }}</h1>
+
+    </body>
+</html>

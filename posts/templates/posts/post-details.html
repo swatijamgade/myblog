@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }}</title>
+</head>
+<body>
+
+<h1>{{ post.title }}</h1>
+<p>Author: {{ post.author }}</p>
+<p>{{ post.publish }}</p>
+<hr>
+<p>{{ post.content }}</p>
+
+<h2>Comments</h2>
+
+<form method="post" action="{% url "post_comment" %}">
+    {% csrf_token %}
+    <label for="name">Your name: </label><br>
+    <input type="text" id="name" name="name" placeholder="Your name here"><br>
+    <label for="email">Your email: </label><br>
+    <input type="email" id="email" name="email" placeholder="Your email here"><br>
+    <label for="comment">Your comment: </label><br>
+    <input type="text" id="comment" name="comment" placeholder="Your comment here"><br>
+    <input type="hidden" name="post_id" value="{{ post.id }}">
+    <input type="submit" value="Submit">
+</form>
+
+
+
+{% for comment in comments %}
+    <p>{{ comment.name }} - {{ comment.email }}</p>
+    <p>{{ comment.content }}</p>
+    <hr>
+{% endfor %}
+
+</body>
+</html>
