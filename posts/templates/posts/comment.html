@@ -5,10 +5,11 @@
     <title>Add A Comment</title>
 </head>
 <body>
-<form action="{% url 'post_comment' %}" method="post">
+
+<form action="{% url 'post_comment' post.id %}" method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="Back">
+    <input type="submit" value="Add Comment">
 </form>
 </body>
 </html>

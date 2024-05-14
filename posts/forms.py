@@ -16,6 +16,3 @@ class CommentModelForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ('name', 'email', 'content')
-
-    def __str__(self):
-        return self.name

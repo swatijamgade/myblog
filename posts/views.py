@@ -1,48 +1,57 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Post, Comment
 from .forms import CommentModelForm
 from django.http import HttpResponse
+
 
 # http://127.0.0.1:8000/post/2024/5/8/this-is-title/?key=value&k2=value2
 
 
 def post_list(request):
     posts = Post.objects.filter(status='published')
-    return HttpResponse('Hello World')
     return render(request, 'posts/post-list.html', context={'all_posts': posts, 'title': 'Blog Posts'})
 
 
 def post_detail(request, year, month, day, post_slug):
+    try:
+        post = Post.objects.get(
+            publish__year=year,
+            publish__month=month,
+            publish__day=day,
+            slug=post_slug
+        )
+    except Post.DoesNotExist:
+        return HttpResponse('<h1>Post not found</h1>')
 
-    post = Post.objects.get(
-        publish__year=year,
-        publish__month=month,
-        publish__day=day,
-        slug=post_slug
-    )
-    return render(request, 'posts/post-detail.html', context={'post': post})
+    comments = Comment.objects.filter(post=post)
+    form = CommentModelForm()
+    context = {'post': post, 'comments': comments, 'form': form}
+    return render(request, 'posts/post-detail.html', context=context)
 
-def post_comment(request):
+
+def post_comment(request, post_id):
     """
     This function is used to handle the comment form submission
     """
 
+    post = get_object_or_404(Post, id=post_id)
+
     if request.method == 'POST':
         comment_form = CommentModelForm(request.POST)
-        data = request.POST
+        print(comment_form)
+        print(type(comment_form))  # Post
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            print(type(comment_form))
+            comment.post = post  # attach post to comment
+            comment.save()
+        else:
+            print(comment_form.errors)
 
-        # get post by id
-        post = Post.objects.get(id=data['post_id'])
+        context = {'post': post, 'comment': comment, 'form': comment_form}
 
-        # save it
-        comment = Comment(post=post, name=data['name'], email=data['email'], content=data['comment'])
-        comment.save()
-
-        # another option of saving
-        # Comment.objects.create(post_id=data['post_id'], name=data['name'], email=data['email'], content=data['content'])
-
-        # get all comments for the post
-        comments = Comment.objects.filter(post=post)
-        print(comments)
-
-        return render(request, 'posts/comment.html', context={'post': post, 'comments': comments, 'form': comment_form})
+        return render(request, 'posts/comment.html', context=context)
+    else:
+        comment_form = CommentModelForm()
+        context = {'post': post, 'form': comment_form}
+        return render(request, 'posts/comment.html', context=context)
