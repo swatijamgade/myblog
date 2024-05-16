@@ -12,18 +12,18 @@
 <hr>
 <p>{{ post.content }}</p>
 
-<h2>Comments</h2>
+{% include 'snippets/comment_form.html' %}
 
-<form action="{% url 'post_comment' post.id % }" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Add Comment">
-</form>
+{% with comments.count as total_comments %}
+<h2>Total Comments: {{ total_comments }}</h2>
+{% endwith %}
 
 {% for comment in comments %}
     <p>{{ comment.name }} - {{ comment.email }}</p>
     <p>{{ comment.content }}</p>
     <hr>
+{% empty %}
+    <p>No comments yet.</p>
 {% endfor %}
 
 </body>

@@ -6,10 +6,12 @@
 </head>
 <body>
 
-<form action="{% url 'post_comment' post.id %}" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Add Comment">
-</form>
+{% if comment %}
+    <h2>Your comment has been added.</h2>
+    <p><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
+{% else %}
+    {% include 'snippets/comment_form.html' %}
+{% endif %}
+
 </body>
 </html>

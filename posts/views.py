@@ -2,14 +2,29 @@ from django.shortcuts import render, get_object_or_404
 from .models import Post, Comment
 from .forms import CommentModelForm
 from django.http import HttpResponse
-
-
-# http://127.0.0.1:8000/post/2024/5/8/this-is-title/?key=value&k2=value2
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+# from django.core.mail import send_mail
 
 
 def post_list(request):
     posts = Post.objects.filter(status='published')
-    return render(request, 'posts/post-list.html', context={'all_posts': posts, 'title': 'Blog Posts'})
+
+    paginator = None
+    try:
+        posts_per_page = 2
+        paginator = Paginator(object_list=posts, per_page=posts_per_page)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+
+    # page_obj.has_next()
+    # page_obj.previous_page_number()
+    # page_obj.next_page_number()
+    # page_obj.paginator.num_pages
+    # page_obj.number
+
+    return render(request, 'posts/post-list.html', context={'page_obj': page_obj, 'title': 'Blog Posts', 'posts': posts})
 
 
 def post_detail(request, year, month, day, post_slug):
@@ -18,12 +33,14 @@ def post_detail(request, year, month, day, post_slug):
             publish__year=year,
             publish__month=month,
             publish__day=day,
-            slug=post_slug
+            slug=post_slug,
+            status='published'
         )
     except Post.DoesNotExist:
         return HttpResponse('<h1>Post not found</h1>')
 
-    comments = Comment.objects.filter(post=post)
+    comments = Comment.objects.filter(post=post, active=True)
+    # total_comments = comments.count()
     form = CommentModelForm()
     context = {'post': post, 'comments': comments, 'form': form}
     return render(request, 'posts/post-detail.html', context=context)
@@ -33,7 +50,6 @@ def post_comment(request, post_id):
     """
     This function is used to handle the comment form submission
     """
-
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == 'POST':
@@ -47,11 +63,9 @@ def post_comment(request, post_id):
             comment.save()
         else:
             print(comment_form.errors)
-
         context = {'post': post, 'comment': comment, 'form': comment_form}
+        return render(request, 'posts/comment.html', context=context)
 
-        return render(request, 'posts/comment.html', context=context)
-    else:
-        comment_form = CommentModelForm()
-        context = {'post': post, 'form': comment_form}
-        return render(request, 'posts/comment.html', context=context)
+
+def share_post(request):
+    return render(request, 'posts/share.html')
