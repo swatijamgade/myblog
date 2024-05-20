@@ -18,6 +18,9 @@
 <h2>Total Comments: {{ total_comments }}</h2>
 {% endwith %}
 
+
+<p><a href="{% url 'share_post' post_id=post.id %}">Share Post</a></p>
+
 {% for comment in comments %}
     <p>{{ comment.name }} - {{ comment.email }}</p>
     <p>{{ comment.content }}</p>

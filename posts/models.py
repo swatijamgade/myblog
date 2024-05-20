@@ -44,6 +44,9 @@ class Post(models.Model):
         super().save(force_insert, force_update, using, update_fields)
 
 
+def a(a=1, b=2):
+    return a + b
+
 # one instance = one row in the table
 # one field = one column in the table
 # one model = one table in the database
