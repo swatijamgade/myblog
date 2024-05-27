@@ -7,6 +7,11 @@
     <h1>Welcome to my Blog!</h1>
     <p>Check out my posts</p>
 
+    <form method="get" action="{% url 'search_post' %}">
+        <input type="text" name="query" placeholder="search posts">
+        <input type="submit" value="Search">
+    </form>
+
     {% with posts.count as total_post  %}
     <p>Number of posts: {{ total_post }}</p>
     {% endwith %}

@@ -56,7 +56,7 @@ def post_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == 'POST':
-        comment_form = CommentModelForm(request.POST)
+        comment_form = CommentModelForm(request.POST);
         print(comment_form)
         print(type(comment_form))  # Post
         if comment_form.is_valid():
@@ -90,3 +90,17 @@ def share_post(request, post_id):
     else:
         form = EmailPostForm()
         return render(request, 'posts/share.html', context={'post': post, 'form': form})
+
+def search_post(request):
+    """
+    This function is used to search for posts
+    """
+    query = request.GET.get('query')
+
+    # get all related posts form db
+    searched_posts = Post.objects.filter(
+        Q(title__icontains=query) | Q(content__icontains=query) | Q(author__username__icontains=query)
+    ).distinct()
+    # Post.objects.filter(title__icontains=query)
+    # Post.objects.filter(content__icontains=query)
+    return render(request, 'posts/search.html', context={'posts': searched_posts, 'query': query})
