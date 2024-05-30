@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %} Posts {% endblock %}
+
+{% block content %}
+    <h1>My Blog</h1>
+
+    {% if results %}
+        {% with results.count as total_posts %}
+        <p>Found {{ total_posts }} posts</p>
+        {% endwith %}
+        {% for post in results %}
+        <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+        <p class="date">Published {{ post.publish }} by {{ post.author }}</p>
+        <p>{{ post.body|truncatewords:30 }}</p>
+    {% endfor %}
+
+    {% endif %}
+{#    {% if tag %}#}
+{#    <h2>Posts tagged with "{{ tag.name }}"</h2>#}
+{#    {% endif %}#}
+    {% for post in posts %}
+        <h2><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h2>
+        <p class="date">Published {{ post.publish }} by {{ post.author }}</p>
+        <p>{{ post.body|truncatewords:30 }}</p>
+    {% endfor %}
+
+{% include "snippets/pagination.html" with page=posts %}
+{% endblock %}
