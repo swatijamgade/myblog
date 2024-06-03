@@ -1,5 +1,3 @@
-
-
 from django import forms
 from .models import Comment
 
@@ -20,3 +18,7 @@ class CommentModelForm(forms.ModelForm):
             'content': forms.Textarea(attrs={'rows': 3, 'cols': 20}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+
+class SearchForm(forms.Form):
+    query = forms.CharField()

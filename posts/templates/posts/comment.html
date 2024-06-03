@@ -1,18 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add A Comment</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-{% if comment %}
-    <h2>Your comment has been added.</h2>
-    <p><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
-{% else %}
-    {% include 'snippets/comment_form.html' %}
-{% endif %}
+{% block title %}Comment added {% endblock %}
 
-
-</body>
-</html>
+{% block content %}
+    {% if comment %}
+        <h2>Your comment has been added.</h2>
+        <p><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
+    {% else %}
+        {% include 'snippets/comment_form.html' %}
+    {% endif %}
+{% endblock %}

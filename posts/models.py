@@ -2,6 +2,18 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.shortcuts import reverse
 from django.utils.text import slugify
+from datetime import date
+from taggit.managers import TaggableManager
+
+
+class PublishManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status='published')
+
+
+class TotalPostManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().count()
 
 
 class Post(models.Model):
@@ -19,6 +31,12 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)
+    tags = TaggableManager()
+
+    # custom manger
+    objects = models.Manager()  # default manager
+    published = PublishManager()  # custom manager
+    total_posts = TotalPostManager()  # custom manager
 
     def __str__(self):
         return self.title
@@ -34,7 +52,7 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         # return f'/post/{self.publish.year}/{self.publish.month}/{self.publish.day}/{self.slug}/'
-        return reverse('post_detail', args=[self.publish.year, self.publish.month, self.publish.day, self.slug])
+        return reverse('posts:post_detail', args=[self.publish.year, self.publish.month, self.publish.day, self.slug])
 
     def save(
             self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -43,9 +61,10 @@ class Post(models.Model):
         self.slug = slug
         super().save(force_insert, force_update, using, update_fields)
 
+    @classmethod
+    def get_total_posts(cls):
+        return cls.objects.count()
 
-def a(a=1, b=2):
-    return a + b
 
 # one instance = one row in the table
 # one field = one column in the table
@@ -63,7 +82,7 @@ def a(a=1, b=2):
 # T - template
 
 
-class Comment(models.Model):
+class Comment(models.Model):  # comment_set.all()
     post = models.ForeignKey(to=Post, on_delete=models.CASCADE, related_name='comments')
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -80,3 +99,34 @@ class Comment(models.Model):
         indexes = [
             models.Index(fields=['created', 'active']),
         ]
+
+
+class Blog(models.Model):
+    name = models.CharField(max_length=100)
+    tagline = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+
+class Author(models.Model):
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.name
+
+
+class Entry(models.Model):
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    headline = models.CharField(max_length=255)
+    body_text = models.TextField()
+    pub_date = models.DateField()
+    mod_date = models.DateField(default=date.today)
+    authors = models.ManyToManyField(Author)
+    number_of_comments = models.IntegerField(default=0)
+    number_of_pingbacks = models.IntegerField(default=0)
+    rating = models.IntegerField(default=5)
+
+    def __str__(self):
+        return self.headline
