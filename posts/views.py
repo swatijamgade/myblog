@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from .models import Post, Comment
 from .forms import CommentModelForm, EmailPostForm, SearchForm
 from taggit.models import Tag
+from django.db.models import Count
 
 
 def post_list(request, tag_slug=None):
@@ -29,12 +30,6 @@ def post_list(request, tag_slug=None):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
-    # page_obj.has_next()
-    # page_obj.previous_page_number()
-    # page_obj.next_page_number()
-    # page_obj.paginator.num_pages
-    # page_obj.number
-
     return render(request, 'posts/list.html', context={'posts': page_obj, 'tag': tag})
 
 
@@ -48,13 +43,18 @@ def post_detail(request, year, month, day, post_slug):
             status='published'
         )
     except Post.DoesNotExist:
-        return HttpResponse('<h1>Post not found</h1>')
+        return render(request, '404.html')
 
     comments = Comment.objects.filter(post=post, active=True)
-    # total_comments = comments.count()
     form = CommentModelForm()
-    context = {'post': post, 'comments': comments, 'form': form}
-    return render(request, 'posts/detail.html', context=context)
+    # total_comments = comments.count()
+    post_limit = 4
+    post_tags_ids = post.tags.values_list("id", flat=True)
+    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id)
+    # similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:post_limit]
+
+    context = {"post": post, "comments": comments, "form": form, "similar_posts": similar_posts}
+    return render(request, template_name="posts/detail.html", context=context)
 
 
 @require_POST
@@ -79,13 +79,6 @@ def share_post(request, post_id):
 
     if request.method == 'POST':
         form = EmailPostForm(request.POST)
-        # print(form)
-        # print(form.errors)
-        # print(form.fields)
-        # print(form.cleaned_data)
-        # print(form.as_p())
-        # print(form.has_error('email'))
-        # print(form.has_changed())
         sent = False
         if form.is_valid():
             # get the cleaned data
@@ -110,10 +103,15 @@ def search_post(request):
     """
     This function is used to search for posts
     """
-    query = request.GET.get('query')
+    search_form = SearchForm()  # empty form
 
-    # get all related posts form db
-    results = Post.objects.filter(
-        Q(title__icontains=query) | Q(content__icontains=query) | Q(author__username__icontains=query)
-    ).distinct()
-    return render(request, 'posts/list.html', context={'results': results, 'query': query})
+    if 'query' in request.GET:
+        search_form = SearchForm(request.GET)  # submitted form
+        if search_form.is_valid():
+            query = search_form.cleaned_data['query']
+            results = Post.published.filter(
+                Q(title__icontains=query) | Q(content__icontains=query) | Q(author__username__icontains=query)
+            ).distinct()
+            return render(request, 'posts/search.html', context={'results': results, 'query': query})
+    else:
+        return render(request, 'posts/search.html', context={'form': search_form})

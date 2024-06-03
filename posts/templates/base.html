@@ -8,10 +8,10 @@
 </head>
 <body>
     <div class="topnav">
-        <a class="active" href="#home">Home</a>
-        <a href="{% url "posts:post_list" %}">Posts</a>
-        <a href="{% url "posts:post_list" %}">Contact</a>
-        <a href="{% url "posts:post_list" %}">About</a>
+        <a href="{% url "posts:post_list" %}">Home</a>
+        <a class="active" href="{% url "posts:search_post" %}">Search</a>
+        <a href="#About">About</a>
+
       </div>
 
     <div id="content">
@@ -22,6 +22,11 @@
 
     <div id="sidebar">
         <h2>My Blog</h2>
+        <p>Search this blog</p>
+        <form method="get" action="{% url "posts:search_post" %}">
+            <input type="text" name="query">
+            <button type="submit">Search</button>
+        </form>
         <p>This is my blog</p>
 {#        <p>Total posts: {% total_posts %} </p>#}
         <h3>Latest posts</h3>
@@ -37,5 +42,7 @@
 
     {% block footer %}
     {% endblock %}
+
+    <script src="{% static "js/script.js" %}"></script>
 </body>
 </html>
