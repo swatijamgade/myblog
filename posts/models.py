@@ -65,6 +65,10 @@ class Post(models.Model):
     def get_total_posts(cls):
         return cls.objects.count()
 
+    @classmethod
+    def get_latest_post(cls):
+        return cls.objects.latest('-publish')
+
 
 # one instance = one row in the table
 # one field = one column in the table
@@ -82,7 +86,14 @@ class Post(models.Model):
 # T - template
 
 
-class Comment(models.Model):  # comment_set.all()
+class Comment(models.Model):
+    """
+    c = Comment.objects.get(id=1)
+    c.post
+
+    p = Post.object.get(id=1)
+    p.comments.all()
+    """
     post = models.ForeignKey(to=Post, on_delete=models.CASCADE, related_name='comments')
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -101,32 +112,22 @@ class Comment(models.Model):  # comment_set.all()
         ]
 
 
-class Blog(models.Model):
-    name = models.CharField(max_length=100)
-    tagline = models.TextField()
+class Album(models.Model):
+    album_name = models.CharField(max_length=100)
+    artist = models.CharField(max_length=100)
+
+
+class Track(models.Model):
+    album = models.ForeignKey(Album, related_name='tracks', on_delete=models.CASCADE)
+    order = models.IntegerField()
+    title = models.CharField(max_length=100)
+    duration = models.IntegerField()
+
+    class Meta:
+        unique_together = ['album', 'order']
+        ordering = ['order']
 
     def __str__(self):
-        return self.name
+        return '%d: %s' % (self.order, self.title)
 
-
-class Author(models.Model):
-    name = models.CharField(max_length=200)
-    email = models.EmailField()
-
-    def __str__(self):
-        return self.name
-
-
-class Entry(models.Model):
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
-    headline = models.CharField(max_length=255)
-    body_text = models.TextField()
-    pub_date = models.DateField()
-    mod_date = models.DateField(default=date.today)
-    authors = models.ManyToManyField(Author)
-    number_of_comments = models.IntegerField(default=0)
-    number_of_pingbacks = models.IntegerField(default=0)
-    rating = models.IntegerField(default=5)
-
-    def __str__(self):
-        return self.headline
+   gogog

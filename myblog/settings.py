@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 'posts.apps.PostsConfig',
     'posts',
-    'taggit'
+    'taggit',
+    'rest_framework',
+
+
 ]
 
 MIDDLEWARE = [
